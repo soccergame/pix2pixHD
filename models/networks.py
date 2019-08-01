@@ -1,14 +1,8 @@
-### Copyright (C) 2017 NVIDIA Corporation. All rights reserved. 
-### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import torch
 import torch.nn as nn
-from torch.nn import init
 import functools
 from torch.autograd import Variable
 import numpy as np
-import math
-import torch.nn.functional as F
-import copy
 
 ###############################################################################
 # Functions
@@ -45,7 +39,7 @@ def define_G(input_nc, output_nc, ngf, netG, n_downsample_global=3, n_blocks_glo
     print(netG)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())   
-        netG.cuda(device_id=gpu_ids[0])
+        netG.cuda(gpu_ids[0])
     netG.apply(weights_init)
     return netG
 
@@ -55,7 +49,7 @@ def define_D(input_nc, ndf, n_layers_D, norm='instance', use_sigmoid=False, num_
     print(netD)
     if len(gpu_ids) > 0:
         assert(torch.cuda.is_available())
-        netD.cuda(device_id=gpu_ids[0])
+        netD.cuda(gpu_ids[0])
     netD.apply(weights_init)
     return netD
 
@@ -284,14 +278,15 @@ class Encoder(nn.Module):
         outputs = self.model(input)
 
         # instance-wise average pooling
-        outputs_mean = outputs.clone()        
+        outputs_mean = outputs.clone()
         inst_list = np.unique(inst.cpu().numpy().astype(int))        
         for i in inst_list:
-            indices = (inst == i).nonzero() # n x 4            
-            for j in range(self.output_nc):
-                output_ins = outputs[indices[:,0], indices[:,1] + j, indices[:,2], indices[:,3]]                    
-                mean_feat = torch.mean(output_ins).expand_as(output_ins)                                        
-                outputs_mean[indices[:,0], indices[:,1] + j, indices[:,2], indices[:,3]] = mean_feat                        
+            for b in range(input.size()[0]):
+                indices = (inst[b:b+1] == int(i)).nonzero() # n x 4            
+                for j in range(self.output_nc):
+                    output_ins = outputs[indices[:,0] + b, indices[:,1] + j, indices[:,2], indices[:,3]]                    
+                    mean_feat = torch.mean(output_ins).expand_as(output_ins)                                        
+                    outputs_mean[indices[:,0] + b, indices[:,1] + j, indices[:,2], indices[:,3]] = mean_feat                       
         return outputs_mean
 
 class MultiscaleDiscriminator(nn.Module):
@@ -366,7 +361,7 @@ class NLayerDiscriminator(nn.Module):
         sequence += [[nn.Conv2d(nf, 1, kernel_size=kw, stride=1, padding=padw)]]
 
         if use_sigmoid:
-            sequence += [nn.Sigmoid()]
+            sequence += [[nn.Sigmoid()]]
 
         if getIntermFeat:
             for n in range(len(sequence)):

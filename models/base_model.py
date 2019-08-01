@@ -1,7 +1,6 @@
-### Copyright (C) 2017 NVIDIA Corporation. All rights reserved. 
-### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 import os
 import torch
+import sys
 
 class BaseModel(torch.nn.Module):
     def name(self):
@@ -67,18 +66,24 @@ class BaseModel(torch.nn.Module):
                 try:
                     pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}                    
                     network.load_state_dict(pretrained_dict)
-                    print('Pretrained network %s has excessive layers; Only loading layers that are used' % network_label)
+                    if self.opt.verbose:
+                        print('Pretrained network %s has excessive layers; Only loading layers that are used' % network_label)
                 except:
                     print('Pretrained network %s has fewer layers; The following are not initialized:' % network_label)
-                    from sets import Set
-                    not_initialized = Set()
                     for k, v in pretrained_dict.items():                      
                         if v.size() == model_dict[k].size():
                             model_dict[k] = v
 
+                    if sys.version_info >= (3,0):
+                        not_initialized = set()
+                    else:
+                        from sets import Set
+                        not_initialized = Set()                    
+
                     for k, v in model_dict.items():
                         if k not in pretrained_dict or v.size() != pretrained_dict[k].size():
-                            not_initialized.add(k.split('.')[0])                            
+                            not_initialized.add(k.split('.')[0])
+                    
                     print(sorted(not_initialized))
                     network.load_state_dict(model_dict)                  
 

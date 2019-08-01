@@ -1,10 +1,7 @@
-### Copyright (C) 2017 NVIDIA Corporation. All rights reserved. 
-### Licensed under the CC BY-NC-SA 4.0 license (https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode).
 from options.train_options import TrainOptions
 from data.data_loader import CreateDataLoader
 from models.models import create_model
-import numpy as np
-import os, time
+import os
 import util.util as util
 from torch.autograd import Variable
 import torch.nn as nn
