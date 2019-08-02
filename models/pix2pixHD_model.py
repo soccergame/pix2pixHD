@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# 修改者：何智翔
+# 描述：pix2pixHD的代码
+# ==============================================================================
 import numpy as np
 import torch
 import os

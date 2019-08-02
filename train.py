@@ -1,3 +1,10 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# 修改者：何智翔
+# 描述：pix2pixHD的训练代码
+# ==============================================================================
+
 import time
 import os
 import numpy as np

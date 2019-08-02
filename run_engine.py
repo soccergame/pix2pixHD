@@ -1,3 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# 修改者：何智翔
+# 描述：pix2pixHD的代码
+# ==============================================================================
 import os
 import sys
 from random import randint
